@@ -1,0 +1,18 @@
+[
+  {
+    "id": 1,
+    "title": "Sholawat Badar",
+    "singer": "Habib Syech Bin Abdul Qodir Assegaf",
+    "theme": "Pujian Nabi",
+    "description": "Lagu sholawat Badar yang penuh makna dan cinta kepada Rasulullah SAW.",
+    "audio_url": "assets/audio/sholawat_badar.mp3"
+  },
+  {
+    "id": 2,
+    "title": "Ya Asyiqol Musthofa",
+    "singer": "Gambus Al-Wafi",
+    "theme": "Dzikir",
+    "description": "Lantunan Ya Asyiqol Musthofa yang menenangkan hati dan jiwa.",
+    "audio_url": "assets/audio/ya_asyiqol.mp3"
+  }
+]
