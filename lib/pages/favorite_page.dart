@@ -1,10 +1,10 @@
 import 'package:flutter/material.dart';
 import '../widgets/sidebar.dart';
-import '../main.dart';
+import '../globals.dart';
+import '../models/song.dart';
 
 class FavoritePage extends StatelessWidget {
-  final ValueNotifier<List<String>> favoriteSongsNotifier;
-  const FavoritePage({super.key, required this.favoriteSongsNotifier});
+  const FavoritePage({super.key});
 
   @override
   Widget build(BuildContext context) {
@@ -19,46 +19,57 @@ class FavoritePage extends StatelessWidget {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Sholawat Favorit Saya',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                  const Text('Sholawat Favorit Saya', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   Expanded(
                     child: ValueListenableBuilder<List<String>>(
                       valueListenable: favoriteSongsNotifier,
-                      builder: (context, favoriteSongs, _) {
-                        if (favoriteSongs.isEmpty) {
+                      builder: (context, favs, _) {
+                        if (favs.isEmpty) {
                           return Container(
                             alignment: Alignment.center,
                             decoration: BoxDecoration(
                               color: Colors.white,
                               borderRadius: BorderRadius.circular(20),
-                              boxShadow: [
-                                BoxShadow(
-                                  color: Colors.black.withOpacity(0.1),
-                                  blurRadius: 6,
-                                  offset: const Offset(0, 3),
-                                ),
-                              ],
+                              boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 6)],
                             ),
-                            child: const Text(
-                              'Belum ada sholawat favorit.\nTambahkan dari halaman utama!',
-                              textAlign: TextAlign.center,
-                              style: TextStyle(fontSize: 16),
+                            child: const Padding(
+                              padding: EdgeInsets.all(24),
+                              child: Text('Belum ada sholawat favorit.\nTambahkan dari halaman utama!', textAlign: TextAlign.center),
                             ),
-                          );
-                        } else {
-                          return ListView.builder(
-                            itemCount: favoriteSongs.length,
-                            itemBuilder: (context, index) {
-                              return ListTile(
-                                title: Text(favoriteSongs[index]),
-                                trailing: const Icon(Icons.favorite, color: Colors.red),
-                              );
-                            },
                           );
                         }
+
+                        // cari objek Song dari masterSongs berdasarkan audioUrl
+                        final List<Song> favSongs = favs.map((path) {
+                          return masterSongs.firstWhere(
+                            (s) => s.audioUrl == path,
+                            orElse: () => Song(id: 0, title: path.split('/').last, singer: '', audioUrl: path, cover: 'assets/images/radio.jpg'),
+                          );
+                        }).toList();
+
+                        return ListView.builder(
+                          itemCount: favSongs.length,
+                          itemBuilder: (context, i) {
+                            final s = favSongs[i];
+                            return Card(
+                              margin: const EdgeInsets.symmetric(vertical: 8),
+                              child: ListTile(
+                                leading: Image.asset(s.cover, width: 50, height: 50, fit: BoxFit.cover, errorBuilder: (_, __, ___) => Container(width:50, height:50, color:Colors.grey[300], child: const Icon(Icons.image_not_supported))),
+                                title: Text(s.title),
+                                subtitle: Text(s.singer),
+                                trailing: IconButton(
+                                  icon: const Icon(Icons.delete_outline),
+                                  onPressed: () {
+                                    final list = List<String>.from(favoriteSongsNotifier.value);
+                                    list.remove(s.audioUrl);
+                                    favoriteSongsNotifier.value = list;
+                                  },
+                                ),
+                              ),
+                            );
+                          },
+                        );
                       },
                     ),
                   ),

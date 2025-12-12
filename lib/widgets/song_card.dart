@@ -1,41 +1,72 @@
 import 'package:flutter/material.dart';
 import '../models/song.dart';
+import '../globals.dart';
 
 class SongCard extends StatelessWidget {
   final Song song;
-  final VoidCallback onTap;
-  final VoidCallback? onFavoriteToggle;
+  final bool isPlaying;
+  final VoidCallback onTapPlay;
 
   const SongCard({
     super.key,
     required this.song,
-    required this.onTap,
-    this.onFavoriteToggle,
+    required this.isPlaying,
+    required this.onTapPlay,
   });
 
   @override
   Widget build(BuildContext context) {
     return Card(
-      margin: const EdgeInsets.symmetric(vertical: 8, horizontal: 12),
+      margin: const EdgeInsets.symmetric(vertical: 8),
       child: ListTile(
-        leading: Image.asset(song.cover, width: 50, height: 50, fit: BoxFit.cover),
-        title: Text(song.title, style: const TextStyle(fontWeight: FontWeight.bold)),
-        subtitle: Text("${song.singer} • ${song.theme}"),
+        leading: ClipRRect(
+          borderRadius: BorderRadius.circular(6),
+          child: Image.asset(
+            song.cover,
+            width: 56,
+            height: 56,
+            fit: BoxFit.cover,
+            errorBuilder: (_, __, ___) => Container(
+              width: 56,
+              height: 56,
+              color: Colors.grey[300],
+              child: const Icon(Icons.image_not_supported),
+            ),
+          ),
+        ),
+        title: Text(song.title),
+        subtitle: Text(song.singer),
         trailing: Row(
           mainAxisSize: MainAxisSize.min,
           children: [
-            if (onFavoriteToggle != null)
-              IconButton(
-                icon: Icon(
-                  song.isFavorite ? Icons.favorite : Icons.favorite_border,
-                  color: Colors.red,
-                ),
-                onPressed: onFavoriteToggle,
-              ),
-            const Icon(Icons.play_circle_fill, color: Colors.green),
+            IconButton(
+              icon: Icon(isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill),
+              iconSize: 36,
+              onPressed: onTapPlay,
+            ),
+            ValueListenableBuilder<List<String>>(
+              valueListenable: favoriteSongsNotifier,
+              builder: (context, favs, _) {
+                final isFav = favs.contains(song.audioUrl);
+                return IconButton(
+                  icon: Icon(isFav ? Icons.favorite : Icons.favorite_border, color: isFav ? Colors.red : null),
+                  onPressed: () {
+                    final list = List<String>.from(favoriteSongsNotifier.value);
+                    if (isFav) {
+                      list.remove(song.audioUrl);
+                    } else {
+                      list.add(song.audioUrl);
+                    }
+                    favoriteSongsNotifier.value = list;
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(content: Text(isFav ? 'Dihapus dari favorit' : 'Ditambahkan ke favorit')),
+                    );
+                  },
+                );
+              },
+            ),
           ],
         ),
-        onTap: onTap,
       ),
     );
   }

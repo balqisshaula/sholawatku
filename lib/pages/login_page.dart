@@ -1,5 +1,4 @@
 import 'package:flutter/material.dart';
-import 'home_page.dart';
 
 class LoginPage extends StatelessWidget {
   const LoginPage({super.key});
@@ -54,10 +53,7 @@ class LoginPage extends StatelessWidget {
                   minimumSize: const Size.fromHeight(50),
                 ),
                 onPressed: () {
-                  Navigator.pushReplacement(
-                    context,
-                    MaterialPageRoute(builder: (_) => HomePage()),
-                  );
+                  Navigator.pushReplacementNamed(context, '/home');
                 },
                 child: const Text('Sign up with email'),
               ),

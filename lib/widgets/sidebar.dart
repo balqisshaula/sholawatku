@@ -1,7 +1,20 @@
 import 'package:flutter/material.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class Sidebar extends StatelessWidget {
   const Sidebar({super.key});
+
+  Future<void> logout(BuildContext context) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.clear(); // Hapus data login
+
+    // Kembali ke login & hapus semua halaman sebelumnya
+    Navigator.pushNamedAndRemoveUntil(
+      context,
+      '/login',
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -9,74 +22,50 @@ class Sidebar extends StatelessWidget {
       width: 200,
       color: Colors.black87,
       child: Column(
-        crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          const Padding(
-            padding: EdgeInsets.all(16),
-            child: Text(
-              'MENU',
-              style: TextStyle(
-                color: Colors.white,
-                fontWeight: FontWeight.bold,
-                fontSize: 18,
-              ),
-            ),
-          ),
-          const Divider(color: Colors.white54, thickness: 0.5),
+          const SizedBox(height: 20),
 
-          // ✅ Home
+          // HOME
           ListTile(
             leading: const Icon(Icons.home, color: Colors.white),
             title: const Text('Home', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pushNamed(context, '/home');
-            },
+            onTap: () => Navigator.pushReplacementNamed(context, '/home'),
           ),
 
-          // ✅ Radio
+          // RADIO
           ListTile(
             leading: const Icon(Icons.radio, color: Colors.white),
             title: const Text('Radio', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pushNamed(context, '/radio');
-            },
+            onTap: () => Navigator.pushReplacementNamed(context, '/radio'),
           ),
 
-          // ✅ Favorite
+          // FAVORITE
           ListTile(
             leading: const Icon(Icons.favorite, color: Colors.white),
             title: const Text('Favorite', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pushNamed(context, '/favorite');
-            },
+            onTap: () => Navigator.pushReplacementNamed(context, '/favorite'),
           ),
 
-          // ✅ Settings
+          // SETTINGS
           ListTile(
             leading: const Icon(Icons.settings, color: Colors.white),
             title: const Text('Settings', style: TextStyle(color: Colors.white)),
-            onTap: () {
-              Navigator.pushNamed(context, '/settings');
-            },
+            onTap: () => Navigator.pushReplacementNamed(context, '/settings'),
           ),
 
-          const Spacer(),
+          const Spacer(), // supaya Logout turun ke bawah
 
-          // ✅ Tombol Logout
-          Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.pushReplacementNamed(context, '/login');
-              },
-              icon: const Icon(Icons.logout, color: Colors.white),
-              label: const Text('Logout', style: TextStyle(color: Colors.white)),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: Colors.redAccent,
-                minimumSize: const Size(double.infinity, 40),
-              ),
+          // LOGOUT
+          ListTile(
+            leading: const Icon(Icons.logout, color: Colors.redAccent),
+            title: const Text(
+              'Logout',
+              style: TextStyle(color: Colors.redAccent),
             ),
+            onTap: () => logout(context),
           ),
+
+          const SizedBox(height: 20),
         ],
       ),
     );

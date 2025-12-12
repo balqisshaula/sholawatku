@@ -3,8 +3,7 @@ import '../models/song.dart';
 
 class DetailPage extends StatelessWidget {
   final Song song;
-  DetailPage({required this.song});
-
+  const DetailPage({required this.song, super.key});
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -12,27 +11,13 @@ class DetailPage extends StatelessWidget {
       body: Padding(
         padding: const EdgeInsets.all(16),
         child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(song.title,
-                style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold)),
-            SizedBox(height: 8),
-            Text("Penyanyi: ${song.singer}"),
-            Text("Tema: ${song.theme}"),
-            SizedBox(height: 16),
-            Text(song.description),
-            SizedBox(height: 24),
-            Center(
-              child: ElevatedButton.icon(
-                onPressed: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(content: Text('Fitur Play belum aktif (dummy)')),
-                  );
-                },
-                icon: Icon(Icons.play_arrow),
-                label: Text("Putar Lagu"),
-              ),
-            )
+            Image.asset(song.cover, width: double.infinity, height: 200, fit: BoxFit.cover),
+            const SizedBox(height:12),
+            Text(song.title, style: const TextStyle(fontSize:22,fontWeight: FontWeight.bold)),
+            Text(song.singer),
+            const SizedBox(height:12),
+            ElevatedButton(onPressed: () => Navigator.pushNamed(context, '/player', arguments: song), child: const Text('Play')),
           ],
         ),
       ),

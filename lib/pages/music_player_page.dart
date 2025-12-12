@@ -11,26 +11,29 @@ class MusicPlayerPage extends StatefulWidget {
 }
 
 class _MusicPlayerPageState extends State<MusicPlayerPage> {
-  late final AudioPlayer _player;
+  final AudioPlayer _player = AudioPlayer();
   bool _isPlaying = false;
 
   @override
   void initState() {
     super.initState();
-    _player = AudioPlayer();
+    // load but don't autoplay
+    _player.setSource(AssetSource(widget.song.audioUrl));
+    _player.onPlayerStateChanged.listen((s) {
+      setState(() {
+        _isPlaying = s == PlayerState.playing;
+      });
+    });
   }
 
-  Future<void> _togglePlay() async {
-  if (_isPlaying) {
-    await _player.pause();
-  } else {
-    await _player.play(AssetSource(widget.song.audioUrl));
+  Future<void> _toggle() async {
+    if (_isPlaying) {
+      await _player.pause();
+    } else {
+      await _player.stop();
+      await _player.play(AssetSource(widget.song.audioUrl));
+    }
   }
-  if (mounted) {
-    setState(() => _isPlaying = !_isPlaying);
-  }
-}
-
 
   @override
   void dispose() {
@@ -40,19 +43,17 @@ class _MusicPlayerPageState extends State<MusicPlayerPage> {
 
   @override
   Widget build(BuildContext context) {
+    final s = widget.song;
     return Scaffold(
-      appBar: AppBar(title: Text(widget.song.title)),
+      appBar: AppBar(title: Text(s.title)),
       body: Center(
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Image.asset(widget.song.cover, width: 200, height: 200),
-            const SizedBox(height: 20),
-            Text(widget.song.singer),
-            IconButton(
-              icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill, size: 60),
-              onPressed: _togglePlay,
-            ),
+            Image.asset(s.cover, width:200, height:200, fit:BoxFit.cover),
+            const SizedBox(height: 12),
+            Text(s.singer),
+            IconButton(icon: Icon(_isPlaying ? Icons.pause_circle_filled : Icons.play_circle_fill, size:64), onPressed: _toggle),
           ],
         ),
       ),

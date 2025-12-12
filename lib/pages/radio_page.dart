@@ -1,52 +1,67 @@
 import 'package:flutter/material.dart';
 import 'package:audioplayers/audioplayers.dart';
 import '../widgets/sidebar.dart';
-import '../main.dart';
+import '../globals.dart';
 
 class RadioPage extends StatefulWidget {
   const RadioPage({super.key});
 
   @override
-  _RadioPageState createState() => _RadioPageState();
+  State<RadioPage> createState() => _RadioPageState();
 }
 
 class _RadioPageState extends State<RadioPage> {
-  AudioPlayer audioPlayer = AudioPlayer();
+  final AudioPlayer _player = AudioPlayer();
   bool isPlaying = false;
   bool isFavorite = false;
-  String songName = 'radio.mp3'; // pastikan file ini ada di assets/songs/
+  final String radioAsset = 'songs/radio.mp3'; // path relative digunakan dengan AssetSource
 
-  // tombol play/pause
-  void playPause() async {
-    if (isPlaying) {
-      await audioPlayer.pause();
-    } else {
-      await audioPlayer.play(AssetSource('songs/$songName'));
-    }
-    setState(() {
-      isPlaying = !isPlaying;
+  @override
+  void initState() {
+    super.initState();
+    // We're not auto-playing radio; just prepare player if desired
+    _player.onPlayerStateChanged.listen((state) {
+      setState(() {
+        isPlaying = state == PlayerState.playing;
+      });
     });
+
+    // Check if radioAsset is in favorites already
+    isFavorite = favoriteSongsNotifier.value.contains(radioAsset);
   }
 
-  // tombol like/unlike
+  Future<void> playPause() async {
+    try {
+      if (isPlaying) {
+        await _player.pause();
+      } else {
+        // Play local asset (AssetSource takes path relative to assets/ declared in pubspec)
+        await _player.play(AssetSource(radioAsset));
+      }
+    } catch (e) {
+      debugPrint('Radio play error: $e');
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text('Gagal memutar radio: $e')));
+      }
+    }
+  }
+
   void toggleFavorite() {
+    final list = List<String>.from(favoriteSongsNotifier.value);
     setState(() {
       isFavorite = !isFavorite;
-
       if (isFavorite) {
-        // tambahkan ke daftar favorit
-        favoriteSongsNotifier.value = [...favoriteSongsNotifier.value, songName];
+        if (!list.contains(radioAsset)) list.add(radioAsset);
       } else {
-        // hapus dari daftar favorit
-        favoriteSongsNotifier.value =
-            favoriteSongsNotifier.value.where((s) => s != songName).toList();
+        list.removeWhere((s) => s == radioAsset);
       }
+      favoriteSongsNotifier.value = list;
     });
   }
 
   @override
   void dispose() {
-    audioPlayer.dispose();
+    _player.dispose();
     super.dispose();
   }
 
@@ -63,10 +78,7 @@ class _RadioPageState extends State<RadioPage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  const Text(
-                    'Radio Sholawat',
-                    style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold),
-                  ),
+                  const Text('Radio Sholawat', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold)),
                   const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.all(20),
@@ -86,21 +98,19 @@ class _RadioPageState extends State<RadioPage> {
                         Image.asset(
                           'assets/images/radio.jpg',
                           height: 180,
-                        ),
-                        const SizedBox(height: 20),
-                        const Text(
-                          'Radio Sholawat 24 Jam',
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
+                          errorBuilder: (_, __, ___) => Container(
+                            width: double.infinity,
+                            height: 180,
+                            color: Colors.grey[200],
+                            alignment: Alignment.center,
+                            child: const Icon(Icons.radio, size: 64),
                           ),
                         ),
-                        const SizedBox(height: 10),
-                        const Text(
-                          'Dengarkan lantunan sholawat secara langsung.',
-                          textAlign: TextAlign.center,
-                        ),
                         const SizedBox(height: 20),
+                        const Text('Radio Sholawat 24 Jam', style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold)),
+                        const SizedBox(height: 8),
+                        const Text('Dengarkan lantunan sholawat secara langsung.', textAlign: TextAlign.center),
+                        const SizedBox(height: 16),
                         Row(
                           mainAxisAlignment: MainAxisAlignment.center,
                           children: [
@@ -115,11 +125,7 @@ class _RadioPageState extends State<RadioPage> {
                             ),
                             const SizedBox(width: 20),
                             IconButton(
-                              icon: Icon(
-                                isFavorite ? Icons.favorite : Icons.favorite_border,
-                                color: Colors.red,
-                                size: 32,
-                              ),
+                              icon: Icon(isFavorite ? Icons.favorite : Icons.favorite_border, color: Colors.red, size: 32),
                               onPressed: toggleFavorite,
                             ),
                           ],
